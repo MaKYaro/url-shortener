@@ -8,18 +8,23 @@ import (
 )
 
 type Config struct {
-	Env             string
-	DBConn          DBConnConf
-	Timeout         time.Duration
-	IdleTimeout     time.Duration
-	AliasLifeLength time.Duration
+	Env         string        `json:"Env"`
+	DBConn      DBConnConfig  `json:"DBConn" env-required:"true"`
+	Timeout     time.Duration `json:"Timeout"`
+	IdleTimeout time.Duration `json:"IdleTimeout"`
+	Alias       AliasConfig   `json:"Alias"`
 }
 
-type DBConnConf struct {
-	User     string
-	Password string
-	Host     string
-	Port     int
+type AliasConfig struct {
+	Length     int           `json:"Length" env-default:"8"`
+	LifeLength time.Duration `json:"LifeLength" env-default:"2592000000000000"`
+}
+
+type DBConnConfig struct {
+	User     string `json:"User"`
+	Password string `json:"Password"`
+	Host     string `json:"Host"`
+	Port     int    `json:"Port"`
 }
 
 // MustLoad parse config file in Config struct
