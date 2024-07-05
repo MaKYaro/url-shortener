@@ -25,6 +25,7 @@ type DBConnConfig struct {
 	Password string `json:"Password"`
 	Host     string `json:"Host"`
 	Port     int    `json:"Port"`
+	DBName   string `json:"DBName"`
 }
 
 // MustLoad parse config file in Config struct
