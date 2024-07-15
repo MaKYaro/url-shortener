@@ -38,8 +38,6 @@ func (s *Storage) SaveURL(alias *domain.Alias) error {
 	query := "INSERT INTO urls (alias, url, expire) VALUES ($1, $2, $3)"
 	_, err := s.db.Exec(query, alias.Value, alias.URL, alias.Expire)
 
-	fmt.Println(err)
-
 	if pqErr, ok := err.(*pq.Error); ok && pqErr.Code.Name() == "unique_violation" {
 		return fmt.Errorf("%s: %w", op, storage.ErrURLExists)
 	}
