@@ -79,3 +79,7 @@ func (s *Storage) DeleteURL(alias string) error {
 
 	return nil
 }
+
+func (s *Storage) Close() {
+	s.db.Close()
+}

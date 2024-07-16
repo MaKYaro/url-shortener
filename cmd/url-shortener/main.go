@@ -26,6 +26,7 @@ func main() {
 	log.Debug("debug masseges are enabled")
 
 	storage, err := postgres.New(cfg.DBConn)
+	defer storage.Close()
 	if err != nil {
 		log.Error("can't init storage", slog.String("error", err.Error()))
 	}
@@ -57,6 +58,10 @@ func main() {
 	_, err = storage.GetURL("goo")
 	if err != nil {
 		log.Error("can't get url", slog.String("error", err.Error()))
+	}
+	err = storage.DeleteURL("adfadf")
+	if err != nil {
+		log.Error("can't delete url", slog.String("error", err.Error()))
 	}
 
 	// TODO: init router
