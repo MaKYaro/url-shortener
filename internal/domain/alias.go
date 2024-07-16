@@ -8,6 +8,6 @@ type Alias struct {
 	Expire time.Time
 }
 
-func (a *Alias) IsExpired() bool {
+func (a *Alias) Expired() bool {
 	return a.Expire.Before(time.Now())
 }
