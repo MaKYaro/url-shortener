@@ -7,3 +7,7 @@ type Alias struct {
 	URL    string
 	Expire time.Time
 }
+
+func (a *Alias) IsExpired() bool {
+	return a.Expire.Before(time.Now())
+}
