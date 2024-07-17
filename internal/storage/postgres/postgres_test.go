@@ -66,7 +66,7 @@ func TestSaveURLUniqueError(t *testing.T) {
 	err = s.SaveURL(&alias)
 	require.EqualError(
 		t,
-		fmt.Errorf("storage.postgres.SaveURL: %w", storage.ErrURLExists),
+		fmt.Errorf("storage.postgres.SaveURL: %w", storage.ErrAliasExists),
 		err.Error(),
 	)
 }
