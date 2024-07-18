@@ -39,7 +39,7 @@ func (s *Storage) SaveURL(alias *domain.Alias) error {
 	_, err := s.db.Exec(query, alias.Value, alias.URL, alias.Expire)
 
 	if pqErr, ok := err.(*pq.Error); ok && pqErr.Code.Name() == "unique_violation" {
-		return fmt.Errorf("%s: %w", op, storage.ErrURLExists)
+		return fmt.Errorf("%s: %w", op, storage.ErrAliasExists)
 	}
 	if err != nil {
 		return fmt.Errorf("%s: %w", op, err)
