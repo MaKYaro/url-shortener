@@ -3,7 +3,7 @@ package postgres
 import (
 	"database/sql"
 	"database/sql/driver"
-	"fmt"
+	"errors"
 	"testing"
 	"time"
 
@@ -64,11 +64,7 @@ func TestSaveURLUniqueError(t *testing.T) {
 		WillReturnError(&pq.Error{Code: pq.ErrorCode("23505")})
 
 	err = s.SaveURL(&alias)
-	require.EqualError(
-		t,
-		fmt.Errorf("storage.postgres.SaveURL: %w", storage.ErrAliasExists),
-		err.Error(),
-	)
+	require.ErrorIs(t, err, storage.ErrAliasExists)
 }
 
 func TestSaveURLFullDiskError(t *testing.T) {
@@ -86,16 +82,14 @@ func TestSaveURLFullDiskError(t *testing.T) {
 		Expire: now,
 	}
 
+	resultError := errors.New("full disk error")
+
 	mock.ExpectExec("INSERT INTO urls").
 		WithArgs("sqlmock", "https://github.com/DATA-DOG/go-sqlmock", AnyTime{}).
-		WillReturnError(&pq.Error{Code: pq.ErrorCode("53100")})
+		WillReturnError(resultError)
 
 	err = s.SaveURL(&alias)
-	require.EqualError(
-		t,
-		fmt.Errorf("storage.postgres.SaveURL: %w", &pq.Error{Code: pq.ErrorCode("53100")}),
-		err.Error(),
-	)
+	require.ErrorIs(t, err, resultError)
 }
 
 func TestGetURL(t *testing.T) {
@@ -106,20 +100,15 @@ func TestGetURL(t *testing.T) {
 	defer db.Close()
 	s := Storage{db}
 
-	exp, _ := time.Parse("2016-06-22 19:10:25-07", "2016-06-22 19:10:25-07")
-	row := sqlmock.NewRows([]string{"alias", "url", "expire"}).
-		AddRow("sqlmock", "https://github.com/DATA-DOG/go-sqlmock", exp)
-	mock.ExpectQuery("SELECT alias, url, expire FROM urls WHERE alias =").
+	row := sqlmock.NewRows([]string{"url"}).
+		AddRow("https://github.com/DATA-DOG/go-sqlmock")
+	mock.ExpectQuery("SELECT url FROM urls WHERE alias =").
 		WillReturnRows(row)
 
-	aliasExpected := domain.Alias{
-		Value:  "sqlmock",
-		URL:    "https://github.com/DATA-DOG/go-sqlmock",
-		Expire: exp,
-	}
-	aliasResult, err := s.GetURL("sqlmock")
+	urlExpected := "https://github.com/DATA-DOG/go-sqlmock"
+	urlResult, err := s.GetURL("sqlmock")
 	require.NoError(t, err)
-	require.Equal(t, aliasExpected, *aliasResult)
+	require.Equal(t, urlExpected, urlResult)
 }
 
 func TestGetURLErrorURLNotFound(t *testing.T) {
@@ -130,18 +119,14 @@ func TestGetURLErrorURLNotFound(t *testing.T) {
 	defer db.Close()
 	s := Storage{db}
 
-	mock.ExpectQuery("SELECT alias, url, expire FROM urls WHERE alias =").
+	mock.ExpectQuery("SELECT url FROM urls WHERE alias =").
 		WillReturnError(sql.ErrNoRows)
-	aliasResult, err := s.GetURL("ui")
-	require.Nil(t, aliasResult)
-	require.EqualError(
-		t,
-		fmt.Errorf("storage.postgres.GetURL: %w", storage.ErrURLNotFound),
-		err.Error(),
-	)
+	urlResult, err := s.GetURL("ui")
+	require.Empty(t, urlResult)
+	require.ErrorIs(t, err, storage.ErrURLNotFound)
 }
 
-func TestGetURLErrorWarning(t *testing.T) {
+func TestGetURLErrorInAssignment(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	if err != nil {
 		t.Fatalf("failed to open stub connection: %s", err)
@@ -149,15 +134,13 @@ func TestGetURLErrorWarning(t *testing.T) {
 	defer db.Close()
 	s := Storage{db}
 
-	mock.ExpectQuery("SELECT alias, url, expire FROM urls WHERE alias =").
-		WillReturnError(&pq.Error{Code: pq.ErrorCode("01000")})
-	aliasResult, err := s.GetURL("ui")
-	require.Nil(t, aliasResult)
-	require.EqualError(
-		t,
-		fmt.Errorf("storage.postgres.GetURL: %w", &pq.Error{Code: pq.ErrorCode("01000")}),
-		err.Error(),
-	)
+	resultError := errors.New("error in assignment")
+
+	mock.ExpectQuery("SELECT url FROM urls WHERE alias =").
+		WillReturnError(resultError)
+	urlResult, err := s.GetURL("ui")
+	require.Empty(t, urlResult)
+	require.ErrorIs(t, err, resultError)
 }
 
 func TestDeleteURL(t *testing.T) {
@@ -184,12 +167,10 @@ func TestDeleteURLErrorWarning(t *testing.T) {
 	defer db.Close()
 	s := Storage{db}
 
+	resultError := errors.New("error warning")
+
 	mock.ExpectExec("DELETE FROM urls WHERE alias = ").
-		WillReturnError(&pq.Error{Code: pq.ErrorCode("01000")})
+		WillReturnError(resultError)
 	err = s.DeleteURL("ui")
-	require.EqualError(
-		t,
-		fmt.Errorf("storage.postgres.DeleteURL: can't delete url: %w", &pq.Error{Code: pq.ErrorCode("01000")}),
-		err.Error(),
-	)
+	require.ErrorIs(t, err, resultError)
 }

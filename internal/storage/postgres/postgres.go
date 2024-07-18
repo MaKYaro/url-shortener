@@ -48,23 +48,23 @@ func (s *Storage) SaveURL(alias *domain.Alias) error {
 	return nil
 }
 
-func (s *Storage) GetURL(alias string) (*domain.Alias, error) {
+func (s *Storage) GetURL(alias string) (string, error) {
 	const op = "storage.postgres.GetURL"
 
-	query := "SELECT alias, url, expire FROM urls WHERE alias = $1"
+	query := "SELECT url FROM urls WHERE alias = $1"
 	row := s.db.QueryRow(query, alias)
 
-	var a domain.Alias
-	err := row.Scan(&a.Value, &a.URL, &a.Expire)
+	var url string
+	err := row.Scan(&url)
 
 	if err == sql.ErrNoRows {
-		return nil, fmt.Errorf("%s: %w", op, storage.ErrURLNotFound)
+		return "", fmt.Errorf("%s: %w", op, storage.ErrURLNotFound)
 	}
 	if err != nil {
-		return nil, fmt.Errorf("%s: %w", op, err)
+		return "", fmt.Errorf("%s: %w", op, err)
 	}
 
-	return &a, nil
+	return url, nil
 }
 
 func (s *Storage) DeleteURL(alias string) error {
