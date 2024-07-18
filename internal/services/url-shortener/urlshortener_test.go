@@ -135,3 +135,67 @@ func TestSaveURLErrAliasExists(t *testing.T) {
 	require.Nil(t, err)
 	require.Equal(t, savedAlias, aliasToSave)
 }
+
+func TestGetURL(t *testing.T) {
+	cases := []struct {
+		name      string
+		alias     string
+		mockURL   string
+		mockError error
+		wantURL   string
+		wantError error
+	}{
+		{
+			name:      "Success",
+			alias:     "sfaa9rl",
+			mockURL:   "http://github.com/stretchr/testify/assert",
+			mockError: nil,
+			wantURL:   "http://github.com/stretchr/testify/assert",
+			wantError: nil,
+		},
+		{
+			name:      "URL not found error ",
+			alias:     "sfaa9rl",
+			mockURL:   "",
+			mockError: storage.ErrURLNotFound,
+			wantURL:   "",
+			wantError: ErrURLNotFound,
+		},
+		{
+			name:      "Can't find url error",
+			alias:     "sfaa9rl",
+			mockURL:   "",
+			mockError: errors.New("can't find url for some reasons"),
+			wantURL:   "",
+			wantError: ErrCantFindUrl,
+		},
+	}
+
+	for _, tcase := range cases {
+		tcase := tcase
+		t.Run(tcase.name, func(t *testing.T) {
+			t.Parallel()
+
+			urlGetterMock := mocks.NewURLGetter(t)
+			urlGetterMock.On("GetURL", tcase.alias).
+				Return(tcase.mockURL, tcase.mockError).
+				Once()
+
+			dur, _ := time.ParseDuration("3s")
+			urlShortener := New(
+				slogdiscard.NewDiscardLogger(),
+				nil,
+				urlGetterMock,
+				nil,
+				nil,
+				dur,
+			)
+
+			gotURL, gotError := urlShortener.GetURL(tcase.alias)
+
+			require.Equal(t, tcase.wantURL, gotURL)
+			require.ErrorIs(t, gotError, tcase.wantError)
+
+		})
+	}
+}

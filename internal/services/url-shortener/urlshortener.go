@@ -12,6 +12,8 @@ import (
 
 var (
 	ErrEnableToSave = errors.New("can't save url")
+	ErrURLNotFound  = errors.New("url not found")
+	ErrCantFindUrl  = errors.New("can't find url")
 )
 
 //go:generate go run github.com/vektra/mockery/v2@v2.43.2 --name=URLSaver
@@ -21,7 +23,7 @@ type URLSaver interface {
 
 //go:generate go run github.com/vektra/mockery/v2@v2.43.2 --name=URLGetter
 type URLGetter interface {
-	GetURL(alias string) (*domain.Alias, error)
+	GetURL(alias string) (string, error)
 }
 
 //go:generate go run github.com/vektra/mockery/v2@v2.43.2 --name=URLRemover
@@ -62,7 +64,7 @@ func New(
 }
 
 func (u *URLSortener) SaveURL(url string) (*domain.Alias, error) {
-	const op = "services.url-shortener.SaveURL"
+	const op = "services.urlshortener.SaveURL"
 
 	log := u.log.With(slog.String("op", op))
 
@@ -72,6 +74,10 @@ func (u *URLSortener) SaveURL(url string) (*domain.Alias, error) {
 	err := u.saver.SaveURL(&aliasToSave)
 
 	for err == storage.ErrAliasExists {
+		log.Info(
+			"alias already exists, try to generate unique",
+			slog.String("alias", aliasValue),
+		)
 		aliasValue = u.gen.Generate()
 		aliasToSave = domain.Alias{Value: aliasValue, URL: url, Expire: expire}
 		err = u.saver.SaveURL(&aliasToSave)
@@ -89,5 +95,26 @@ func (u *URLSortener) SaveURL(url string) (*domain.Alias, error) {
 }
 
 func (u *URLSortener) GetURL(alias string) (string, error) {
-	return "", nil
+	const op = "services.urlshortener.GetURL"
+
+	log := u.log.With(slog.String("op", op))
+
+	url, err := u.getter.GetURL(alias)
+	if err == storage.ErrURLNotFound {
+		log.Error(
+			"url not found",
+			slog.String("error", err.Error()),
+		)
+		return "", fmt.Errorf("%s: %w", op, ErrURLNotFound)
+	}
+
+	if err != nil {
+		log.Error(
+			"can't find url",
+			slog.String("error", err.Error()),
+		)
+		return "", fmt.Errorf("%s: %w", op, ErrCantFindUrl)
+	}
+
+	return url, nil
 }
