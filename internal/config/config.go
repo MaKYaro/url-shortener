@@ -8,11 +8,18 @@ import (
 )
 
 type Config struct {
-	Env         string        `json:"Env"`
-	DBConn      DBConnConfig  `json:"DBConn" env-required:"true"`
-	Timeout     time.Duration `json:"Timeout"`
-	IdleTimeout time.Duration `json:"IdleTimeout"`
-	Alias       AliasConfig   `json:"Alias"`
+	Env    string       `json:"Env"`
+	Server HTTPServer   `json:"HTTPServer"`
+	DBConn DBConnConfig `json:"DBConn" env-required:"true"`
+	Alias  AliasConfig  `json:"Alias"`
+}
+
+type HTTPServer struct {
+	Address     string        `json:"Address" env-default:"localhost:8080"`
+	Timeout     time.Duration `json:"Timeout" env-default:"4s"`
+	IdleTimeout time.Duration `json:"IdleTimeout" env-default:"60s"`
+	User        string        `json:"User" env-required:"true"`
+	Password    string        `json:"Password" env-required:"true"`
 }
 
 type AliasConfig struct {
