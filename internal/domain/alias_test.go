@@ -59,3 +59,25 @@ func TestExpired(t *testing.T) {
 		})
 	}
 }
+
+func TestExpireString(t *testing.T) {
+
+	cases := []struct {
+		name  string
+		alias *Alias
+		want  string
+	}{
+		{
+			name:  "Success",
+			alias: &Alias{Expire: time.Date(2024, 7, 20, 12, 8, 3, 45, time.UTC)},
+			want:  "2024-07-20 12:08:03.000000045 +0000 UTC",
+		},
+	}
+
+	for _, tcase := range cases {
+		t.Run(tcase.name, func(t *testing.T) {
+			got := tcase.alias.ExpireString()
+			require.Equal(t, got, tcase.want)
+		})
+	}
+}

@@ -11,3 +11,7 @@ type Alias struct {
 func (a *Alias) Expired() bool {
 	return a.Expire.Before(time.Now())
 }
+
+func (a *Alias) ExpireString() string {
+	return a.Expire.String()
+}
