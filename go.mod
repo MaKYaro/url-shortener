@@ -20,6 +20,7 @@ require (
 require (
 	bou.ke/monkey v1.0.2
 	github.com/DATA-DOG/go-sqlmock v1.5.2
+	github.com/go-playground/validator v9.31.0+incompatible
 	github.com/go-playground/validator/v10 v10.22.0
 	github.com/lib/pq v1.10.9
 	github.com/stretchr/testify v1.9.0

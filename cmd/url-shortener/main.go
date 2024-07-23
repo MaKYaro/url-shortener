@@ -10,7 +10,8 @@ import (
 	"log/slog"
 
 	"github.com/MaKYaro/url-shortener/internal/config"
-	"github.com/MaKYaro/url-shortener/internal/http-server/handlers/url/save"
+	"github.com/MaKYaro/url-shortener/internal/http-server/router"
+	"github.com/MaKYaro/url-shortener/internal/http-server/server"
 	"github.com/MaKYaro/url-shortener/internal/lib/random"
 	urlshortener "github.com/MaKYaro/url-shortener/internal/services/url-shortener"
 	"github.com/MaKYaro/url-shortener/internal/storage/postgres"
@@ -22,7 +23,6 @@ const (
 )
 
 func main() {
-	// TODO: parse config
 	cfg := config.MustLoad()
 
 	log := setupLogger(cfg.Env)
@@ -47,18 +47,16 @@ func main() {
 		cfg.Alias.LifeLength,
 	)
 
-	router := http.NewServeMux()
-	router.HandleFunc("POST /url", save.New(log, shortener))
+	router := router.NewRouter(log, http.NewServeMux(), shortener)
 
 	log.Info("starting server", slog.String("address", cfg.Server.Address))
 
-	srv := &http.Server{
-		Addr:         cfg.Server.Address,
-		Handler:      router,
-		ReadTimeout:  cfg.Server.Timeout,
-		WriteTimeout: cfg.Server.Timeout,
-		IdleTimeout:  cfg.Server.IdleTimeout,
-	}
+	srv := server.NewServer(
+		cfg.Server.Address,
+		router.InitRoutes(),
+		cfg.Server.Timeout,
+		cfg.Server.IdleTimeout,
+	)
 
 	go func() {
 		stop := make(chan os.Signal, 1)
@@ -80,7 +78,7 @@ func main() {
 		close(stop)
 	}()
 
-	if err := srv.ListenAndServe(); err != nil {
+	if err := srv.Run(); err != nil {
 		log.Error("failed to start server")
 	}
 

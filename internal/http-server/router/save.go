@@ -1,13 +1,12 @@
-package save
+package router
 
 import (
 	"encoding/json"
 	"log/slog"
 	"net/http"
 
-	"github.com/MaKYaro/url-shortener/internal/domain"
 	resp "github.com/MaKYaro/url-shortener/internal/lib/http/response"
-	"github.com/go-playground/validator/v10"
+	"github.com/go-playground/validator"
 )
 
 type Request struct {
@@ -20,11 +19,7 @@ type Response struct {
 	Expire string `json:"expire,omitempty"`
 }
 
-type URLSaver interface {
-	SaveURL(url string) (*domain.Alias, error)
-}
-
-func New(log *slog.Logger, urlSaver URLSaver) http.HandlerFunc {
+func SaveURL(log *slog.Logger, urlSaver URLSaver) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		const op = "handlers.url.save.New"
 
