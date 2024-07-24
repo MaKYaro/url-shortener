@@ -11,9 +11,9 @@ import (
 )
 
 var (
-	ErrEnableToSave = errors.New("can't save url")
-	ErrURLNotFound  = errors.New("url not found")
-	ErrCantFindUrl  = errors.New("can't find url")
+	ErrEnableToSave      = errors.New("can't save url")
+	ErrAliasNotFound     = errors.New("alias not found")
+	ErrFailedToFindAlias = errors.New("failed to find alias")
 )
 
 //go:generate go run github.com/vektra/mockery/v2@v2.43.2 --name=URLSaver
@@ -102,18 +102,18 @@ func (u *URLSortener) GetURL(alias string) (string, error) {
 	url, err := u.getter.GetURL(alias)
 	if err == storage.ErrURLNotFound {
 		log.Error(
-			"url not found",
+			"alias not found",
 			slog.String("error", err.Error()),
 		)
-		return "", fmt.Errorf("%s: %w", op, ErrURLNotFound)
+		return "", fmt.Errorf("%s: %w", op, ErrAliasNotFound)
 	}
 
 	if err != nil {
 		log.Error(
-			"can't find url",
+			"failed to find alias",
 			slog.String("error", err.Error()),
 		)
-		return "", fmt.Errorf("%s: %w", op, ErrCantFindUrl)
+		return "", fmt.Errorf("%s: %w", op, ErrFailedToFindAlias)
 	}
 
 	return url, nil
