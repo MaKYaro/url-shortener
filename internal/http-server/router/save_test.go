@@ -73,7 +73,7 @@ func TestSaveHandler(t *testing.T) {
 					Return(tcase.mockAlias, tcase.mockError)
 			}
 
-			handler := SaveURL(slogdiscard.NewDiscardLogger(), urlSaverMock)
+			saver := SaveURL(slogdiscard.NewDiscardLogger(), urlSaverMock)
 
 			var input string
 			if tcase.requestBody == "" {
@@ -90,7 +90,7 @@ func TestSaveHandler(t *testing.T) {
 			require.NoError(t, err)
 
 			rr := httptest.NewRecorder()
-			handler.ServeHTTP(rr, req)
+			saver.ServeHTTP(rr, req)
 
 			require.Equal(t, rr.Code, http.StatusOK)
 

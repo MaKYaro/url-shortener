@@ -47,7 +47,12 @@ func main() {
 		cfg.Alias.LifeLength,
 	)
 
-	router := router.NewRouter(log, http.NewServeMux(), shortener)
+	router := router.NewRouter(
+		log,
+		http.NewServeMux(),
+		shortener,
+		shortener,
+	)
 
 	log.Info("starting server", slog.String("address", cfg.Server.Address))
 
