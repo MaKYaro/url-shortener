@@ -21,7 +21,7 @@ type Response struct {
 
 func SaveURL(log *slog.Logger, urlSaver URLSaver) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		const op = "handlers.url.save.New"
+		const op = "http-server.router.SaveURL"
 
 		log = log.With(slog.String("op", op))
 
