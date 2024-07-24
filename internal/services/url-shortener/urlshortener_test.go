@@ -8,6 +8,7 @@ import (
 	"bou.ke/monkey"
 	"github.com/MaKYaro/url-shortener/internal/domain"
 	"github.com/MaKYaro/url-shortener/internal/lib/logger/slogdiscard"
+	"github.com/MaKYaro/url-shortener/internal/services"
 	"github.com/MaKYaro/url-shortener/internal/services/url-shortener/mocks"
 	"github.com/MaKYaro/url-shortener/internal/storage"
 	"github.com/stretchr/testify/require"
@@ -51,7 +52,7 @@ func TestSaveURL(t *testing.T) {
 			},
 			generatedAlias: "adf3KY7r",
 			mockError:      errors.New("db doesn't work"),
-			saveError:      ErrEnableToSave,
+			saveError:      services.ErrEnableToSave,
 		},
 		{
 			name: "Empty url",
@@ -63,7 +64,7 @@ func TestSaveURL(t *testing.T) {
 			},
 			generatedAlias: "adf3KY7r",
 			mockError:      errors.New("empty url"),
-			saveError:      ErrEnableToSave,
+			saveError:      services.ErrEnableToSave,
 		},
 	}
 
@@ -159,7 +160,7 @@ func TestGetURL(t *testing.T) {
 			mockURL:   "",
 			mockError: storage.ErrURLNotFound,
 			wantURL:   "",
-			wantError: ErrURLNotFound,
+			wantError: services.ErrAliasNotFound,
 		},
 		{
 			name:      "Can't find url error",
@@ -167,7 +168,7 @@ func TestGetURL(t *testing.T) {
 			mockURL:   "",
 			mockError: errors.New("can't find url for some reasons"),
 			wantURL:   "",
-			wantError: ErrCantFindUrl,
+			wantError: services.ErrFailedToFindAlias,
 		},
 	}
 

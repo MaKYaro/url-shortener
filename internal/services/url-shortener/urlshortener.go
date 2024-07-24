@@ -1,19 +1,13 @@
 package urlshortener
 
 import (
-	"errors"
 	"fmt"
 	"log/slog"
 	"time"
 
 	"github.com/MaKYaro/url-shortener/internal/domain"
+	"github.com/MaKYaro/url-shortener/internal/services"
 	"github.com/MaKYaro/url-shortener/internal/storage"
-)
-
-var (
-	ErrEnableToSave      = errors.New("can't save url")
-	ErrAliasNotFound     = errors.New("alias not found")
-	ErrFailedToFindAlias = errors.New("failed to find alias")
 )
 
 //go:generate go run github.com/vektra/mockery/v2@v2.43.2 --name=URLSaver
@@ -88,7 +82,7 @@ func (u *URLSortener) SaveURL(url string) (*domain.Alias, error) {
 			"can't save alias",
 			slog.String("err", err.Error()),
 		)
-		return nil, fmt.Errorf("%s: %w", op, ErrEnableToSave)
+		return nil, fmt.Errorf("%s: %w", op, services.ErrEnableToSave)
 	}
 
 	return &aliasToSave, nil
@@ -105,7 +99,7 @@ func (u *URLSortener) GetURL(alias string) (string, error) {
 			"alias not found",
 			slog.String("error", err.Error()),
 		)
-		return "", fmt.Errorf("%s: %w", op, ErrAliasNotFound)
+		return "", fmt.Errorf("%s: %w", op, services.ErrAliasNotFound)
 	}
 
 	if err != nil {
@@ -113,7 +107,7 @@ func (u *URLSortener) GetURL(alias string) (string, error) {
 			"failed to find alias",
 			slog.String("error", err.Error()),
 		)
-		return "", fmt.Errorf("%s: %w", op, ErrFailedToFindAlias)
+		return "", fmt.Errorf("%s: %w", op, services.ErrFailedToFindAlias)
 	}
 
 	return url, nil
