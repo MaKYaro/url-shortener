@@ -23,6 +23,8 @@ func SaveURL(log *slog.Logger, urlSaver URLSaver) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		const op = "http-server.router.SaveURL"
 
+		w.Header().Set("Content-Type", "application/json")
+
 		log = log.With(slog.String("op", op))
 
 		var req Request
