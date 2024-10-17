@@ -18,7 +18,7 @@ stop-postgres:
 
 .PHONY: run-shortener
 run-shortener:
-	go run ./cmd/url-shortener/main.go --config-path=./config/local.json
+	go run ./cmd/url-shortener/main.go --config-path=./config/local.toml
 
 .PHONY: up-migrations
 up-migrations:

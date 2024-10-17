@@ -1,38 +1,39 @@
 package config
 
 import (
-	"encoding/json"
 	"flag"
 	"os"
 	"time"
+
+	"github.com/BurntSushi/toml"
 )
 
 type Config struct {
-	Env    string       `json:"Env"`
-	Server HTTPServer   `json:"HTTPServer"`
-	DBConn DBConnConfig `json:"DBConn" env-required:"true"`
-	Alias  AliasConfig  `json:"Alias"`
+	Env    string       `toml:"env"`
+	Server HTTPServer   `toml:"http_server"`
+	DBConn DBConnConfig `toml:"db_conn" env-required:"true"`
+	Alias  AliasConfig  `toml:"alias"`
 }
 
 type HTTPServer struct {
-	Address     string        `json:"Address" env-default:"localhost:8080"`
-	Timeout     time.Duration `json:"Timeout" env-default:"4s"`
-	IdleTimeout time.Duration `json:"IdleTimeout" env-default:"60s"`
-	User        string        `json:"User" env-required:"true"`
-	Password    string        `json:"Password" env-required:"true"`
+	Address     string        `toml:"address" env-default:"localhost:8080"`
+	Timeout     time.Duration `toml:"timeout" env-default:"4s"`
+	IdleTimeout time.Duration `toml:"idle_timeout" env-default:"60s"`
+	User        string        `toml:"user" env-required:"true"`
+	Password    string        `toml:"password" env-required:"true"`
 }
 
 type AliasConfig struct {
-	Length     int           `json:"Length" env-default:"8"`
-	LifeLength time.Duration `json:"LifeLength" env-default:"2592000000000000"`
+	Length     int           `toml:"length" env-default:"8"`
+	LifeLength time.Duration `toml:"life_length" env-default:"2592000000000000"`
 }
 
 type DBConnConfig struct {
-	User     string `json:"User"`
-	Password string `json:"Password"`
-	Host     string `json:"Host"`
-	Port     int    `json:"Port"`
-	DBName   string `json:"DBName"`
+	User     string `toml:"user"`
+	Password string `toml:"password"`
+	Host     string `toml:"host"`
+	Port     int    `toml:"port"`
+	DBName   string `toml:"name"`
 }
 
 // MustLoad parse config file in Config struct
@@ -54,7 +55,8 @@ func MustLoad() *Config {
 
 	var cfg Config
 
-	if err = json.Unmarshal(configData, &cfg); err != nil {
+	_, err = toml.Decode(string(configData), &cfg)
+	if err != nil {
 		panic("can't parse config file: " + err.Error())
 	}
 	return &cfg
@@ -68,7 +70,7 @@ func fetchConfPath() string {
 		return path
 	}
 
-	flag.StringVar(&path, "config-path", "./path/to/conf.json", "path to config file")
+	flag.StringVar(&path, "config-path", "./path/to/conf.toml", "path to config file")
 	flag.Parse()
 	return path
 }

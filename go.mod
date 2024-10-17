@@ -43,6 +43,7 @@ require (
 
 require (
 	bou.ke/monkey v1.0.2
+	github.com/BurntSushi/toml v1.4.0
 	github.com/DATA-DOG/go-sqlmock v1.5.2
 	github.com/brianvoe/gofakeit/v7 v7.0.4
 	github.com/gavv/httpexpect/v2 v2.16.0
