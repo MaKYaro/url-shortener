@@ -27,3 +27,37 @@ up-migrations:
 .PHONY: down-migrations
 down-migrations:
 	goose -dir ./migrations postgres "postgresql://postgres:postgres@localhost:5432/url_shortener?sslmode=disable" down
+
+.PHONY: build-bin
+build-bin:
+	go build -o url-shortener-bin ./cmd/url-shortener/main.go
+
+.PHONY: run-bin
+run-bin:
+	./url-shortener-bin --config-path=./config/local.json
+
+.PHONY: docker-us-rebuild
+docker-us-rebuild:
+	sudo docker rm us-container
+	sudo docker image rm us-image
+	sudo docker build -t us-image .
+
+.PHONY: docker-us-run
+docker-us-run:
+	sudo docker run --name=us-container -p 8082:8082 us-image
+
+.PHONY: docker-us-start
+docker-us-start:
+	sudo docker start us-container 
+
+.PHONY: docker-us-stop
+docker-us-stop:
+	sudo docker stop us-container 
+
+.PHONY: docker-db-start
+docker-db-start:
+	sudo docker start us-postgres
+
+.PHONY: docker-db-stop
+docker-db-stop:
+	sudo docker stop us-postgres

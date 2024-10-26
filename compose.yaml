@@ -1,0 +1,35 @@
+services:
+  app:
+    image: golang:1.22-alpine
+    working_dir: /app
+    volumes:
+      - ./:/app
+    ports:
+      - 127.0.0.1:8082:8082
+    command: sh -c "go mod download && 
+      go run ./cmd/url-shortener/main.go --config-path=./config/local.json"
+    depends_on:
+      - postgres
+      - migrations
+
+  postgres:
+    image: postgres
+    volumes:
+      - us-postgres-data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: url_shortener
+  
+  migrations:
+    image: ghcr.io/kukymbr/goose-docker:3.22.1
+    environment:
+      GOOSE_DRIVER: postgres
+      GOOSE_DBSTRING: host=postgres port=5432 user=postgres password=postgres dbname=url_shortener
+      GOOSE_COMMAND: up
+    volumes:
+      - ./migrations:/migrations
+    depends_on:
+      - postgres
+
+volumes:
+  us-postgres-data:
